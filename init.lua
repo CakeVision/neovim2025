@@ -11,11 +11,4 @@ require("config")
 -- Load plugins (will be set up later)
 require("plugins")
 -- In your init.lua or a separate filetype.lua file
-vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
-  pattern = {"*.conf", "*.config", "config"},
-  callback = function()
-    vim.bo.filetype = "bash"
-  end,
-})
-
 

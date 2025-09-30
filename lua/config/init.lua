@@ -4,8 +4,7 @@
 -- Load options first
 require("config.options")
 
--- Then load keymaps
+---- Then load keymaps
 require("config.keymaps")
 
--- Load autocmds (if you create them later)
--- require("config.autocmds")
+require("config.autocmds")

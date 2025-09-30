@@ -24,4 +24,5 @@ return {
   -- require("plugins.specs.lsp"),
   -- require("plugins.specs.telescope"),
   -- require("plugins.specs.completion"),
+
 }

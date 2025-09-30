@@ -1,5 +1,5 @@
 -- ~/.config/nvim/lua/config/keymaps.lua
--- Key mappings
+---- Key mappings
 
 local keymap = vim.keymap.set
 

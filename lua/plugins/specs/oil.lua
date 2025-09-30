@@ -4,6 +4,7 @@
 return {
   {
     "stevearc/oil.nvim",
+    lazy = false,
     dependencies = { "nvim-tree/nvim-web-devicons" },
     keys = {
       { "-", "<CMD>Oil<CR>", desc = "Open parent directory" },
@@ -83,6 +84,34 @@ return {
         ["gx"] = "actions.open_external",
         ["g."] = "actions.toggle_hidden",
         ["g\\"] = "actions.toggle_trash",
+        ["Q"] = {
+          callback = function()
+            local oil = require("oil")
+            local current_buf = vim.api.nvim_get_current_buf()
+            
+            oil.close()
+            
+             -- Get all listed buffers sorted by most recently used
+            local buffers = vim.fn.getbufinfo({buflisted = 1})
+            table.sort(buffers, function(a, b)
+              return a.lastused > b.lastused
+            end)
+            
+            -- Find the first valid buffer that isn't the current one
+            for _, buf in ipairs(buffers) do
+              if buf.bufnr ~= current_buf 
+                 and vim.api.nvim_buf_get_name(buf.bufnr) ~= "" 
+                 and vim.api.nvim_buf_is_loaded(buf.bufnr) then
+                vim.cmd("buffer " .. buf.bufnr)
+                return
+              end
+            end
+            
+            -- No previous buffer found, open an empty one
+            vim.cmd("enew")
+          end,
+          desc = "Close oil and return to previous buffer or empty buffer",
+        },
       },
 
       -- Set to false to disable all of the above keymaps
@@ -162,7 +191,8 @@ return {
     },
     
     config = function(_, opts)
-      require("oil").setup(opts)
+      local oil = require("oil")
+      oil.setup(opts)
     end,
   },
 }

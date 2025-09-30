@@ -1,0 +1,38 @@
+-- vim.api.nvim_create_autocmd("VimEnter", {
+--   callback = function()
+--     local arg = vim.fn.argv(0)
+--     if arg and vim.fn.isdirectory(arg) == 1 then
+--       vim.cmd("Oil " .. vim.fn.fnameescape(arg))
+--     end
+--   end,
+-- })
+
+-- vim.api.nvim_create_autocmd("TextYankPost", {
+--   callback = function()
+--     vim.highlight.on_yank({ higroup = "Visual", timeout = 200 })
+--   end,
+-- })
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = {
+--     "qf",
+--     "help",
+--     "man",
+--     "lspinfo",
+--     "checkhealth",
+--   },
+--   callback = function(event)
+--     vim.bo[event.buf].buflisted = false
+--     vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
+--   end,
+-- })
+
+-- ------------------------------
+-- --          Python         ---
+-- ------------------------------
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = "python",
+--   callback = function()
+--     vim.opt_local.colorcolumn = "88"  -- Black's line length
+--     vim.opt_local.textwidth = 88
+--   end,
+-- })
