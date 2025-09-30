@@ -21,6 +21,18 @@ return {
           prefix = "●",
         },
         severity_sort = true,
+        float = {
+          border = "rounded",
+          source = "always"
+        },
+        signs = {
+          text = {
+            [vim.diagnostic.severity.ERROR] = "✘",
+            [vim.diagnostic.severity.WARN] = "▲",
+            [vim.diagnostic.severity.HINT] = "⚡",
+            [vim.diagnostic.severity.INFO] = "ℹ",
+          }
+        }
       },
       -- Inlay hints
       inlay_hints = {
@@ -33,10 +45,10 @@ return {
       -- Capabilities from nvim-cmp
       capabilities = {},
       -- Format on save
-      format = {
-        formatting_options = nil,
-        timeout_ms = nil,
-      },
+      --format = {
+      --  formatting_options = nil,
+      --  timeout_ms = nil,
+      --},
       -- LSP server settings
       servers = {
         -- Lua (for Neovim config)
@@ -63,56 +75,6 @@ return {
           },
         },
 
-        --pylsp = {
-        --  plugins = {
-        --    -- Disable conflicting formatters/linters
-        --    autopep8 = { enabled = false },
-        --    flake8 = { enabled = false },
-        --    mccabe = { enabled = false },
-        --    pycodestyle = { enabled = false },
-        --    pydocstyle = { enabled = false },
-        --    pylint = { enabled = false },
-        --    yapf = { enabled = false },
-
-        --    -- Core Jedi features
-        --    jedi_completion = {
-        --      enabled = true,
-        --      include_params = true,
-        --      include_class_objects = true,
-        --      include_function_objects = true,
-        --    },
-        --    jedi_hover = { enabled = true },
-        --    jedi_references = { enabled = true },
-        --    jedi_signature_help = { enabled = true },
-        --    jedi_symbols = {
-        --      enabled = true,
-        --      all_scopes = true,
-        --    },
-        --    jedi_definition = {
-        --      enabled = true,
-        --      follow_imports = true,
-        --      follow_builtin_imports = true,
-        --    },
-
-        --    -- Import sorting
-        --    isort = {
-        --      enabled = true,
-        --      profile = "black",
-        --    },
-
-        --    -- Type checking
-        --    mypy = {
-        --      enabled = true,
-        --      live_mode = false,
-        --      strict = false,
-        --    },
-
-        --    -- Rope features (might be causing conflicts)
-        --    rope_completion = { enabled = false }, -- Try disabling this
-        --    rope_autoimport = { enabled = false }, -- And this
-        --  },
-        --},
-
         basedpyright = {
           settings = {
             python = {
@@ -136,6 +98,8 @@ return {
                   "**/__pycache__/**",
                   "**/data/eml/**",
                   "**/tests/**/processed_image*",
+                  "**/.venv/**",
+                  "**/venv/**",
                   "**/tests/**/*.jpg",
                   "**/tests/**/*.png",
                   "**/tests/**/*.jpeg",
@@ -280,7 +244,7 @@ return {
           map("<leader>la", vim.lsp.buf.code_action, "[L]SP Code [A]ction")
           map("<leader>lf", function() vim.lsp.buf.format({ async = true }) end, "[L]SP [F]ormat")
           map("K", vim.lsp.buf.hover, "Hover Documentation")
-          map("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
+          map("<leader>lk", vim.lsp.buf.signature_help, "Signature Documentation")
 
           -- Diagnostic keymaps
           map("[d", vim.diagnostic.goto_prev, "Previous [D]iagnostic")
@@ -299,11 +263,11 @@ return {
           --end
 
           -- Rust-specific keymaps
-          if client.name == "rust_analyzer" then
-            map("<leader>rr", function()
-              vim.cmd.RustLsp("reloadWorkspace")
-            end, "[R]ust [R]eload Workspace")
-          end
+          --if client.name == "rust_analyzer" then
+          --  map("<leader>rr", function()
+          --    vim.cmd.RustLsp("reloadWorkspace")
+          --  end, "[R]ust [R]eload Workspace")
+          --end
 
           -- Document highlighting
           if client and client.server_capabilities.documentHighlightProvider then
@@ -332,11 +296,11 @@ return {
       })
 
       -- Diagnostic signs
-      local signs = { Error = "✘", Warn = "▲", Hint = "⚡", Info = "ℹ" }
-      for type, icon in pairs(signs) do
-        local hl = "DiagnosticSign" .. type
-        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-      end
+      --local signs = { Error = "✘", Warn = "▲", Hint = "⚡", Info = "ℹ" }
+      --for type, icon in pairs(signs) do
+      --  local hl = "DiagnosticSign" .. type
+      --  vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+      --end
 
       -- Auto-format on save for Python files
       --vim.api.nvim_create_autocmd("BufWritePre", {
@@ -362,20 +326,20 @@ return {
   },
 
   -- Better Rust support (optional but recommended)
-  {
-    "mrcjkb/rustaceanvim",
-    version = "^4", -- Recommended
-    ft = { "rust" },
-    opts = {
-      server = {
-        on_attach = function(client, bufnr)
-          -- Disable semantic tokens for better performance
-          client.server_capabilities.semanticTokensProvider = nil
-        end,
-      },
-    },
-    config = function(_, opts)
-      vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
-    end,
-  },
+  --{
+  --  "mrcjkb/rustaceanvim",
+  --  version = "^4", -- Recommended
+  --  ft = { "rust" },
+  --  opts = {
+  --    server = {
+  --      on_attach = function(client, bufnr)
+  --        -- Disable semantic tokens for better performance
+  --        client.server_capabilities.semanticTokensProvider = nil
+  --      end,
+  --    },
+  --  },
+  --  config = function(_, opts)
+  --    vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
+  --  end,
+  --},
 }
