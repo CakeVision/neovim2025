@@ -16,6 +16,8 @@ return {
   require("plugins.specs.telescope"),
   require("plugins.specs.whichkey"),
   require("plugins.specs.lsp"),
+  require("plugins.specs.codecompanion"),
+
 
 
   -- Add more plugin specs here as you convert them

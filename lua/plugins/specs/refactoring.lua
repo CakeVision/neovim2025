@@ -140,59 +140,60 @@ return {
   },
   
   -- Pymple.nvim for Python import management
-  {
-    "alexpasmantier/pymple.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      -- Optional but recommended
-      "nvim-tree/nvim-web-devicons",
-    },
-    build = ":PympleBuild",
-    ft = "python",
-    opts = {
-      -- Enable for Python and Markdown files
-      update_imports = {
-        filetypes = { "python", "markdown" }
-      },
-      
-      -- Auto-save after adding imports
-      add_import_to_buf = {
-        autosave = true
-      },
-      
-      -- Python project settings
-      python = {
-        root_markers = { "pyproject.toml", "setup.py", ".git", "manage.py", "requirements.txt", ".venv", "venv" },
-        virtual_env_names = { ".venv", "venv", "env", ".env" }
-      }
-    },
-    keys = {
-      -- Resolve import under cursor
-      {
-        "<leader>pi",
-        function()
-          require('pymple.api').resolve_import_under_cursor()
-        end,
-        ft = "python",
-        desc = "Add import for symbol",
-      },
-      
-      -- Update imports after file move/rename
-      {
-        "<leader>pu",
-        function()
-          local source = vim.fn.input("Source file: ")
-          local dest = vim.fn.input("Destination file: ")
-          if source ~= "" and dest ~= "" then
-            require('pymple.api').update_imports(source, dest)
-          else
-            vim.notify("Use :PympleUpdateImports <source> <destination> for moving files", vim.log.levels.INFO)
-          end
-        end,
-        ft = "python",
-        desc = "Update imports after move",
-      },
-    },
-  },
+  --{
+  --  "alexpasmantier/pymple.nvim",
+  --  dependencies = {
+  --    "nvim-lua/plenary.nvim",
+  --    "MunifTanjim/nui.nvim",
+  --    -- Optional but recommended
+  --    "nvim-tree/nvim-web-devicons",
+  --  },
+  --  build = ":PympleBuild",
+  --  ft = "python",
+  --  opts = {
+  --    -- Enable for Python and Markdown files
+  --    sed_cmd= 'sed',
+  --    update_imports = {
+  --      filetypes = { "python", "markdown" }
+  --    },
+  --    
+  --    -- Auto-save after adding imports
+  --    add_import_to_buf = {
+  --      autosave = true
+  --    },
+  --    
+  --    -- Python project settings
+  --    python = {
+  --      root_markers = { "pyproject.toml", "setup.py", ".git", "manage.py", "requirements.txt", ".venv", "venv" },
+  --      virtual_env_names = { ".venv", "venv", "env", ".env" }
+  --    }
+  --  },
+  --  keys = {
+  --    -- Resolve import under cursor
+  --    {
+  --      "<leader>pi",
+  --      function()
+  --        require('pymple.api').resolve_import_under_cursor()
+  --      end,
+  --      ft = "python",
+  --      desc = "Add import for symbol",
+  --    },
+  --    
+  --    -- Update imports after file move/rename
+  --    {
+  --      "<leader>pu",
+  --      function()
+  --        local source = vim.fn.input("Source file: ")
+  --        local dest = vim.fn.input("Destination file: ")
+  --        if source ~= "" and dest ~= "" then
+  --          require('pymple.api').update_imports(source, dest)
+  --        else
+  --          vim.notify("Use :PympleUpdateImports <source> <destination> for moving files", vim.log.levels.INFO)
+  --        end
+  --      end,
+  --      ft = "python",
+  --      desc = "Update imports after move",
+  --    },
+  --  },
+  --},
 }

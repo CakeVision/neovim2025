@@ -119,7 +119,7 @@ return {
               analysis = {
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
-                diagnosticMode = "workspace",
+                diagnosticMode = "openFilesOnly",
                 typeCheckingMode = "basic",
                 autoImportCompletions = true,
                 indexing = true,
@@ -151,27 +151,27 @@ return {
           },
         },
 
-        ruff = {
-          init_options = {
-            settings = {
-               args = {
-                  "--extend-select", "I",    -- Import sorting
-                  "--extend-select", "UP",   -- pyupgrade
-                  "--extend-select", "B",    -- flake8-bugbear  
-                  "--extend-select", "C4",   -- flake8-comprehensions
-                  "--extend-select", "SIM",  -- flake8-simplify
-                  "--line-length", "88",
-                  "--exclude", "logs,script_grave,data/eml,__pycache__",
-                },
-                organizeImports = false,
-                fixAll = false,
-                codeAction = {
-                  fixViolation = { enable = true },
-                  organizeImports = { enable = true },
-                },
-            },
-          },
-        },
+       -- ruff = {
+       --   init_options = {
+       --     settings = {
+       --        args = {
+       --           "--extend-select", "I",    -- Import sorting
+       --           "--extend-select", "UP",   -- pyupgrade
+       --           "--extend-select", "B",    -- flake8-bugbear  
+       --           "--extend-select", "C4",   -- flake8-comprehensions
+       --           "--extend-select", "SIM",  -- flake8-simplify
+       --           "--line-length", "88",
+       --           "--exclude", "logs,script_grave,data/eml,__pycache__",
+       --         },
+       --         organizeImports = false,
+       --         fixAll = false,
+       --         codeAction = {
+       --           fixViolation = { enable = true },
+       --           organizeImports = { enable = true },
+       --         },
+       --     },
+       --   },
+       -- },
         -- Go (keeping it simple)
         gopls = {
           settings = {
@@ -217,21 +217,21 @@ return {
         bashls = {},
       },
     },
-    handlers = {
-      ["textDocument/definition"] = function(err, result, ctx, config)
-        if not result or vim.tbl_isempty(result) then
-          return
-        end
-        
-        -- If single result, go directly to buffer
-        if #result == 1 then
-          vim.lsp.util.jump_to_location(result[1], 'utf-8')
-        else
-          -- Multiple results, use telescope or quickfix
-          vim.lsp.handlers["textDocument/definition"](err, result, ctx, config)
-        end
-      end,
-    },
+    --handlers = {
+    --  ["textDocument/definition"] = function(err, result, ctx, config)
+    --    if not result or vim.tbl_isempty(result) then
+    --      return
+    --    end
+    --    
+    --    -- If single result, go directly to buffer
+    --    if #result == 1 then
+    --      vim.lsp.util.jump_to_location(result[1], 'utf-8')
+    --    else
+    --      -- Multiple results, use telescope or quickfix
+    --      vim.lsp.handlers["textDocument/definition"](err, result, ctx, config)
+    --    end
+    --  end,
+    --},
     flags = {
       debounce_text_changes = 200, -- Increase debounce time
     },
