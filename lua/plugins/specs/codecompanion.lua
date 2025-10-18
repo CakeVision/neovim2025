@@ -4,53 +4,75 @@ return {
     "nvim-lua/plenary.nvim",
     "nvim-treesitter/nvim-treesitter",
   },
-  config = function()
-    require("codecompanion").setup({
-      adapters = {
-        -- Gemini API setup
-        gemini = function()
-          return require("codecompanion.adapters").extend("gemini", {
-            env = {
-              api_key = "GEMINI_API_KEY", 
-            },
-          })
-        end,
-        -- Ollama setup (backup option)
-        ollama = function()
-          return require("codecompanion.adapters").extend("ollama", {
-            env = {
-              url = "http://localhost:11434",
-            },
-          })
-        end,
+  opts = {
+    adapters = {
+        http = {
+          anthropic = function()
+            return require("codecompanion.adapters").extend("anthropic", {
+              env = {
+                api_key = "ANTHROPIC_API_KEY",
+              },
+              schema = {
+                model = {
+                  default = "claude-sonnet-4-20250514",
+                },
+              },
+            })
+          end,
+        },
       },
-      -- Set Gemini as default
-      strategies = {
+    strategies = {
         chat = {
-          adapter = "gemini",
+          adapter = "anthropic",
         },
         inline = {
-          adapter = "gemini",
+          adapter = "anthropic",
         },
-      },
-    })
-  end,
-  schema = {
-    model = {
-      default = "gemini-2.0-flash",
     },
   },
-  -- Lazy load on commands
-  cmd = {
-    "CodeCompanion",
-    "CodeCompanionChat",
-    "CodeCompanionActions",
-    "CodeCompanionToggle",
-  },
-  -- Key mappings
+    --[[
+  Key mappings for CodeCompanion.nvim plugin
+  
+  This table defines keyboard shortcuts for interacting with the AI-powered
+  CodeCompanion plugin, which provides chat and code generation capabilities.
+  
+  Mappings:
+  - <leader>cc: Opens a new CodeCompanion chat window
+    * Modes: normal (n) and visual (v)
+    * Use in normal mode to start a new conversation
+    * Use in visual mode to include selected text in the chat context
+  
+  - <leader>ca: Adds selected content to an existing chat
+    * Mode: visual (v) only
+    * Requires text selection to add context to ongoing conversation
+  
+  - <leader>cd: Generates comprehensive docstrings for selected code
+    * Mode: visual (v) only
+    * Uses #{buffer} token to reference the current buffer
+    * Automatically prompts AI to create documentation for selected code
+  
+  All mappings use the <leader> key prefix, which is typically mapped to
+  space or backslash depending on user configuration.
+  --]]
   keys = {
-    { "<leader>cc", "<cmd>CodeCompanionChat<cr>", mode = { "n", "v" }, desc = "CodeCompanion Chat" },
-    { "<leader>ca", "<cmd>CodeCompanionActions<cr>", mode = { "v" }, desc = "CodeCompanion Actions" },
-    { "<leader>ct", "<cmd>CodeCompanionToggle<cr>", mode = { "n" }, desc = "CodeCompanion Toggle" },
+    { 
+      "<leader>cc", 
+      "<cmd>CodeCompanionChat<cr>", 
+      mode = { "n", "v" }, 
+      desc = "AI Chat" 
+    },
+    
+    { 
+      "<leader>ca", 
+      "<cmd>CodeCompanionChat Add<cr>", 
+      mode = "v", 
+      desc = "Add to chat" 
+    },
+    {
+      "<leader>cd",
+      "<cmd>CodeCompanion #{buffer} Generate a comprehensive docstring for the selected code<cr>",
+      mode = "v",
+      desc = "Generate docstring"
+    },
   },
 }

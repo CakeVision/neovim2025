@@ -17,7 +17,7 @@ return {
   require("plugins.specs.whichkey"),
   require("plugins.specs.lsp"),
   require("plugins.specs.codecompanion"),
-
+  -- require("plugins.specs.avante"),
 
 
   -- Add more plugin specs here as you convert them
