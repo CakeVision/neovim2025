@@ -44,7 +44,7 @@ return {
 
       -- Git pickers
       { "<leader>gc", "<cmd>Telescope git_commits<cr>", desc = "Git commits" },
-      { "<leader>gC", "<cmd>Telescope git_bcommits<cr>", desc = "Git buffer commits" },
+      -- { "<leader>gC", "<cmd>Telescope git_bcommits<cr>", desc = "Git buffer commits" },
       { "<leader>gb", "<cmd>Telescope git_branches<cr>", desc = "Git branches" },
       { "<leader>gs", "<cmd>Telescope git_status<cr>", desc = "Git status" },
 
