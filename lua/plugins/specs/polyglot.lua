@@ -11,6 +11,7 @@ return {
       'typescript',
       'rust',
       'go',
+      'zig',
       -- Add any other languages you prefer Tree-sitter for
     }
     

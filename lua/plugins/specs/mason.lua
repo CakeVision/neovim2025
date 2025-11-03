@@ -11,9 +11,9 @@ return {
     opts = {
       ensure_installed = {
         -- Language servers (Python focus)
-        -- "python-lsp-server",         -- Python LSP
         "basedpyright",
-        "ruff",
+        -- "ruff",
+        -- "zls",
         "lua-language-server", -- For Neovim config
         "gopls",           -- Go LSP (if you use Go)
         "rust-analyzer",   -- Rust LSP (if you use Rust)
@@ -34,8 +34,6 @@ return {
         
         -- Additional tools for development
         "debugpy",         -- Python debugger
-        
-        -- Additional tools for Telescope and general use
       },
       ui = {
         border = "rounded",
@@ -73,13 +71,20 @@ return {
   -- Mason integration with LSP
   {
     "williamboman/mason-lspconfig.nvim",
-    dependencies = { "mason.nvim" },
+    lazy = false,
+    dependencies = { "mason.nvim", "neovim/nvim-lspconfig", },
+    
     opts = {
-      -- Automatically install LSP servers configured with lspconfig
-      automatic_installation = true,
+      -- IMPORTANT: Set this to false to prevent automatic LSP setup
+      -- We'll handle LSP setup manually in lsp.lua
+      automatic_installation = true,    
+      automatic_enable = true,
+      
+      -- Just ensure these are installed, but don't set them up
       ensure_installed = {
+        "basedpyright",
+        -- "ruff",
         "lua_ls",
-        --"python-lsp-server",
         "gopls",           -- if you use Go
         "rust_analyzer",   -- if you use Rust
         "marksman",

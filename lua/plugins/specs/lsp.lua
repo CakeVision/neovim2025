@@ -5,10 +5,31 @@ return {
   -- LSP configuration
   {
     "neovim/nvim-lspconfig",
+    lazy = false,
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
-      "williamboman/mason-lspconfig.nvim",
+      {
+        "folke/lazydev.nvim",
+        ft = "lua", -- only load on lua files
+        opts = {
+          library = {
+            -- See the configuration section for more details
+            -- Load luvit types when the `vim.uv` word is found
+            { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+          },
+        },
+      },
+      { -- optional cmp completion source for require statements and module annotations
+        "hrsh7th/nvim-cmp",
+        opts = function(_, opts)
+          opts.sources = opts.sources or {}
+          table.insert(opts.sources, {
+            name = "lazydev",
+            group_index = 0, -- set group index to 0 to skip loading LuaLS completions
+          })
+        end,
+      },
     },
     opts = {
       -- Global LSP settings
@@ -77,65 +98,63 @@ return {
 
         basedpyright = {
           settings = {
-            python = {
-              analysis = {
-                autoSearchPaths = true,
-                useLibraryCodeForTypes = true,
-                diagnosticMode = "openFilesOnly",
-                typeCheckingMode = "basic",
-                autoImportCompletions = true,
-                indexing = true,
-                packageIndexDepths = {
-                  {
-                    name = "",
-                    depth = 2,
-                    includeAllSymbols = true,
-                  },
+            analysis = {
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+              diagnosticMode = "openFilesOnly",
+              typeCheckingMode = "basic",
+              autoImportCompletions = true,
+              indexing = true,
+              packageIndexDepths = {
+                {
+                  name = "",
+                  depth = 2,
+                  includeAllSymbols = true,
                 },
-                 exclude = {
-                  "**/logs/**",
-                  "**/script_grave/**", 
-                  "**/__pycache__/**",
-                  "**/data/eml/**",
-                  "**/tests/**/processed_image*",
-                  "**/.venv/**",
-                  "**/venv/**",
-                  "**/tests/**/*.jpg",
-                  "**/tests/**/*.png",
-                  "**/tests/**/*.jpeg",
-                },
-                 diagnosticSeverityOverrides = {
-                  reportUnusedImport = "warning",
-                  reportUnusedVariable = "warning",
-                  reportGeneralTypeIssues = "warning",
-                  reportOptionalMemberAccess = "information",
-                },
+              },
+              exclude = {
+                "**/logs/**",
+                "**/script_grave/**",
+                "**/__pycache__/**",
+                "**/data/eml/**",
+                "**/tests/**/processed_image*",
+                "**/.venv/**",
+                "**/venv/**",
+                "**/tests/**/*.jpg",
+                "**/tests/**/*.png",
+                "**/tests/**/*.jpeg",
+              },
+              diagnosticSeverityOverrides = {
+                reportUnusedImport = "warning",
+                reportUnusedVariable = "warning",
+                reportGeneralTypeIssues = "warning",
+                reportOptionalMemberAccess = "information",
               },
             },
           },
         },
 
-       -- ruff = {
-       --   init_options = {
-       --     settings = {
-       --        args = {
-       --           "--extend-select", "I",    -- Import sorting
-       --           "--extend-select", "UP",   -- pyupgrade
-       --           "--extend-select", "B",    -- flake8-bugbear  
-       --           "--extend-select", "C4",   -- flake8-comprehensions
-       --           "--extend-select", "SIM",  -- flake8-simplify
-       --           "--line-length", "88",
-       --           "--exclude", "logs,script_grave,data/eml,__pycache__",
-       --         },
-       --         organizeImports = false,
-       --         fixAll = false,
-       --         codeAction = {
-       --           fixViolation = { enable = true },
-       --           organizeImports = { enable = true },
-       --         },
-       --     },
-       --   },
-       -- },
+        -- ruff = {
+        --   init_options = {
+        --     settings = {
+        --        args = {
+        --           "--extend-select", "I",    -- Import sorting
+        --           "--extend-select", "UP",   -- pyupgrade
+        --           "--extend-select", "B",    -- flake8-bugbear
+        --           "--extend-select", "C4",   -- flake8-comprehensions
+        --           "--extend-select", "SIM",  -- flake8-simplify
+        --           "--line-length", "88",
+        --           "--exclude", "logs,script_grave,data/eml,__pycache__",
+        --         },
+        --         organizeImports = false,
+        --         fixAll = false,
+        --         codeAction = {
+        --           fixViolation = { enable = true },
+        --           organizeImports = { enable = true },
+        --         },
+        --     },
+        --   },
+        -- },
         -- Go (keeping it simple)
         gopls = {
           settings = {
@@ -158,16 +177,21 @@ return {
         rust_analyzer = {
           settings = {
             ["rust-analyzer"] = {
-              checkOnSave = {
-                command = "clippy",
-              },
               cargo = {
                 allTargets = true,
               },
             },
           },
         },
-
+        zls = {
+          settings = {
+            zls = {
+              enable_inlay_hints = false,
+              enable_snippets = true,
+              warn_style = true,
+            },
+          },
+        },
         -- JSON
         jsonls = {},
 
@@ -186,7 +210,7 @@ return {
     --    if not result or vim.tbl_isempty(result) then
     --      return
     --    end
-    --    
+    --
     --    -- If single result, go directly to buffer
     --    if #result == 1 then
     --      vim.lsp.util.jump_to_location(result[1], 'utf-8')
@@ -218,6 +242,7 @@ return {
       -- Setup each server
       for server, config in pairs(opts.servers) do
         config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
+        -- config.autostart = true
         lspconfig[server].setup(config)
       end
 
@@ -247,8 +272,8 @@ return {
           map("<leader>lk", vim.lsp.buf.signature_help, "Signature Documentation")
 
           -- Diagnostic keymaps
-          map("[d", vim.diagnostic.goto_prev, "Previous [D]iagnostic")
-          map("]d", vim.diagnostic.goto_next, "Next [D]iagnostic")
+          map("[d", vim.diagnostic.get_prev, "Previous [D]iagnostic")
+          map("]d", vim.diagnostic.get_next, "Next [D]iagnostic")
           map("<leader>ld", vim.diagnostic.open_float, "[L]SP [D]iagnostic")
           map("<leader>lq", vim.diagnostic.setloclist, "[L]SP Diagnostic [Q]uickfix")
 
@@ -319,7 +344,7 @@ return {
       })
       vim.cmd([[
         iabbrev nolsp # type: ignore  # pyright: ignore  # noqa
-        iabbrev noall # type: ignore  # pyright: ignore  # noqa  
+        iabbrev noall # type: ignore  # pyright: ignore  # noqa
         iabbrev nopy # pyright: ignore
       ]])
     end,
