@@ -9,6 +9,7 @@ local keymap = vim.keymap.set
 
 -- Disable space in normal and visual mode (since it's our leader)
 keymap({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
+keymap({ "n", "v" }, "<leader>y", '"+y', { desc = "Copy to sys clip" })
 
 -- Quick escape
 keymap("i", "jk", "<ESC>", { silent = true })
@@ -18,6 +19,8 @@ keymap("n", "<leader>h", ":nohl<CR>", { desc = "Clear search highlight", silent 
 
 -- Quick save
 keymap({"n", "i", "v"}, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
+-- Fast quit
+keymap('n', "<C-q>", ":wqall<CR>", {desc= "Write Quit All", silent=true})
 
 -- =============================================================================
 -- WINDOW NAVIGATION
@@ -83,7 +86,7 @@ keymap("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up", silent = 
 -- =============================================================================
 
 -- Toggle relative line numbers
-keymap("n", "<leader>tn", "<cmd>set relativenumber!<cr>", { desc = "Toggle relative numbers", silent = true })
+keymap("n", "<leader>tN", "<cmd>set relativenumber!<cr>", { desc = "Toggle relative numbers", silent = true })
 
 -- Toggle word wrap
 keymap("n", "<leader>tw", "<cmd>set wrap!<cr>", { desc = "Toggle word wrap", silent = true })
