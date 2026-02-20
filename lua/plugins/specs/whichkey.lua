@@ -8,10 +8,10 @@ return {
     opts = {
       -- Configuration for which-key
       preset = "helix", -- "classic", "modern", or "helix"
-      
+
       -- Delay before showing the popup (in ms)
       delay = 200,
-      
+
       -- You can add any additional options here
       filter = function(mapping)
         -- example to exclude mappings without a description
@@ -25,7 +25,7 @@ return {
         ["<cr>"] = "RET",
         ["<tab>"] = "TAB",
       },
-      
+
       -- Window configuration
       win = {
         border = "rounded", -- none, single, double, rounded, solid, shadow
@@ -34,13 +34,13 @@ return {
         title_pos = "center",
         zindex = 1000,
       },
-      
+
       -- Layout configuration
       layout = {
-        spacing = 3, -- spacing between columns
+        spacing = 3,    -- spacing between columns
         align = "left", -- align columns left, center or right
       },
-      
+
       -- Show icons
       icons = {
         breadcrumb = "»", -- symbol used in the command line area that shows your active key combo
@@ -59,13 +59,13 @@ return {
     config = function(_, opts)
       local wk = require("which-key")
       wk.setup(opts)
-      
+
       -- Define key groups for better organization
       wk.add({
         -- Main groups
         { "<leader>b", group = "buffers" },
         { "<leader>c", group = "code" },
-        { "<leader>d", group = "debug/direnv" },
+        -- { "<leader>d", group = "debug/direnv" },
         { "<leader>f", group = "find" },
         { "<leader>g", group = "git" },
         { "<leader>l", group = "lsp" },
@@ -75,28 +75,44 @@ return {
         { "<leader>t", group = "treesitter/toggle" },
         { "<leader>w", group = "windows" },
         { "<leader>x", group = "diagnostics" },
-        
+
         -- Goto group
-        { "g", group = "goto" },
-        
+        { "g",         group = "goto" },
+
         -- Bracket navigation
-        { "]", group = "next" },
-        { "[", group = "prev" },
-        
+        { "]",         group = "next" },
+        { "[",         group = "prev" },
+
         -- Fold group
-        { "z", group = "fold" },
-        
-        -- Marks group  
-        { "m", group = "marks" },
-        
+        { "z",         group = "fold" },
+
+        -- Marks group
+        { "m",         group = "marks" },
+
         -- Registers group
-        { '"', group = "registers" },
-        
+        { '"',         group = "registers" },
+
         -- Window commands
-        { "<C-w>", group = "windows" },
-        
+        { "<C-w>",     group = "windows" },
+
         -- Buffer-specific groups that might be added by LSP/other plugins
         mode = { "n", "v" },
+      })
+      wk.add({
+        { "<leader>d",  group = "Debug" },
+        { "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "Toggle Breakpoint" },
+        { "<leader>dc", function() require("dap").continue() end,          desc = "Continue" },
+        { "<leader>di", function() require("dap").step_into() end,         desc = "Step Into" },
+        { "<leader>do", function() require("dap").step_over() end,         desc = "Step Over" },
+        { "<leader>dr", function() require("dap").repl.open() end,         desc = "REPL" },
+      })
+      wk.add({
+        { "<leader>o",  group = "Overseer" },
+        { "<leader>or", "<cmd>OverseerRun<cr>",         desc = "Run task" },
+        { "<leader>ot", "<cmd>OverseerToggle<cr>",      desc = "Toggle task list" },
+        { "<leader>ol", "<cmd>OverseerRestartLast<cr>", desc = "Restart last task" },
+        { "<leader>oc", desc = "Run shell command" },
+        { "<leader>oh", desc = "Run from history" },
       })
     end,
     keys = {

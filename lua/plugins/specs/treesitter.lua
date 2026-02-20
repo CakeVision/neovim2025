@@ -37,23 +37,23 @@ return {
         "vimdoc",
         "yaml",
       },
-      
+
       -- Install parsers synchronously (only applied to `ensure_installed`)
       sync_install = false,
-      
+
       -- Automatically install missing parsers when entering buffer
       auto_install = true,
-      
+
       -- Treesitter-based features
       highlight = {
         enable = true,
         additional_vim_regex_highlighting = false,
       },
-      
+
       indent = {
         enable = true,
       },
-      
+
       -- Incremental selection
       incremental_selection = {
         enable = true,
@@ -64,7 +64,7 @@ return {
           scope_incremental = "<TAB>",
         },
       },
-      
+
       -- Text objects
       textobjects = {
         select = {
@@ -82,7 +82,7 @@ return {
             ["ib"] = "@block.inner",
           },
         },
-        
+
         move = {
           enable = true,
           set_jumps = true, -- whether to set jumps in the jumplist
@@ -105,7 +105,7 @@ return {
             ["[]"] = "@class.outer",
           },
         },
-        
+
         swap = {
           enable = true,
           swap_next = {
@@ -119,7 +119,11 @@ return {
     },
     config = function(_, opts)
       require("nvim-treesitter.configs").setup(opts)
-      end,
+      vim.opt.foldmethod = "expr"
+      vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      vim.opt.foldlevel = 99
+      vim.opt.foldlevelstart = 99
+    end,
   },
 
   -- Treesitter context - shows current function/class at top

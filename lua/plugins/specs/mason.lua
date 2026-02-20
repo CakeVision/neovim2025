@@ -86,7 +86,7 @@ return {
         -- "ruff",
         "lua_ls",
         "gopls",           -- if you use Go
-        "rust_analyzer",   -- if you use Rust
+        -- rust_analyzer: handled by rustaceanvim
         "marksman",
         "yamlls",
         "jsonls",

@@ -8,27 +8,16 @@ return {
     lazy = false,
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      "hrsh7th/cmp-nvim-lsp",
+      "saghen/blink.cmp",
       {
         "folke/lazydev.nvim",
         ft = "lua", -- only load on lua files
         opts = {
           library = {
-            -- See the configuration section for more details
             -- Load luvit types when the `vim.uv` word is found
             { path = "${3rd}/luv/library", words = { "vim%.uv" } },
           },
         },
-      },
-      { -- optional cmp completion source for require statements and module annotations
-        "hrsh7th/nvim-cmp",
-        opts = function(_, opts)
-          opts.sources = opts.sources or {}
-          table.insert(opts.sources, {
-            name = "lazydev",
-            group_index = 0, -- set group index to 0 to skip loading LuaLS completions
-          })
-        end,
       },
     },
     opts = {
@@ -63,13 +52,8 @@ return {
       document_highlight = {
         enabled = true,
       },
-      -- Capabilities from nvim-cmp
+      -- Capabilities from blink.cmp
       capabilities = {},
-      -- Format on save
-      --format = {
-      --  formatting_options = nil,
-      --  timeout_ms = nil,
-      --},
       -- LSP server settings
       servers = {
         -- Lua (for Neovim config)
@@ -98,6 +82,7 @@ return {
 
         basedpyright = {
           settings = {
+            typeCheckingMode = "standard",
             analysis = {
               autoSearchPaths = true,
               useLibraryCodeForTypes = true,
@@ -134,27 +119,6 @@ return {
           },
         },
 
-        -- ruff = {
-        --   init_options = {
-        --     settings = {
-        --        args = {
-        --           "--extend-select", "I",    -- Import sorting
-        --           "--extend-select", "UP",   -- pyupgrade
-        --           "--extend-select", "B",    -- flake8-bugbear
-        --           "--extend-select", "C4",   -- flake8-comprehensions
-        --           "--extend-select", "SIM",  -- flake8-simplify
-        --           "--line-length", "88",
-        --           "--exclude", "logs,script_grave,data/eml,__pycache__",
-        --         },
-        --         organizeImports = false,
-        --         fixAll = false,
-        --         codeAction = {
-        --           fixViolation = { enable = true },
-        --           organizeImports = { enable = true },
-        --         },
-        --     },
-        --   },
-        -- },
         -- Go (keeping it simple)
         gopls = {
           settings = {
@@ -173,16 +137,7 @@ return {
           },
         },
 
-        -- Rust (basic setup)
-        rust_analyzer = {
-          settings = {
-            ["rust-analyzer"] = {
-              cargo = {
-                allTargets = true,
-              },
-            },
-          },
-        },
+        -- Rust: handled by rustaceanvim (see rust.lua)
         zls = {
           settings = {
             zls = {
@@ -205,44 +160,36 @@ return {
         bashls = {},
       },
     },
-    --handlers = {
-    --  ["textDocument/definition"] = function(err, result, ctx, config)
-    --    if not result or vim.tbl_isempty(result) then
-    --      return
-    --    end
-    --
-    --    -- If single result, go directly to buffer
-    --    if #result == 1 then
-    --      vim.lsp.util.jump_to_location(result[1], 'utf-8')
-    --    else
-    --      -- Multiple results, use telescope or quickfix
-    --      vim.lsp.handlers["textDocument/definition"](err, result, ctx, config)
-    --    end
-    --  end,
-    --},
     flags = {
       debounce_text_changes = 200, -- Increase debounce time
     },
     config = function(_, opts)
       local lspconfig = require("lspconfig")
-      local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
-      -- Setup capabilities
+      -- Setup capabilities with blink.cmp
       local capabilities = vim.tbl_deep_extend(
         "force",
         {},
         vim.lsp.protocol.make_client_capabilities(),
-        cmp_nvim_lsp.default_capabilities(),
+        require("blink.cmp").get_lsp_capabilities(),
         opts.capabilities or {}
       )
 
       -- Setup diagnostics
       vim.diagnostic.config(vim.deepcopy(opts.diagnostics))
+      vim.diagnostic.config({
+        severity_sort = true,
+        virtual_text = {
+          severity = { min = vim.diagnostic.severity.WARN },
+        },
+        signs = {
+          severity = { min = vim.diagnostic.severity.WARN },
+        },
+      })
 
       -- Setup each server
       for server, config in pairs(opts.servers) do
         config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
-        -- config.autostart = true
         lspconfig[server].setup(config)
       end
 
@@ -277,23 +224,6 @@ return {
           map("<leader>ld", vim.diagnostic.open_float, "[L]SP [D]iagnostic")
           map("<leader>lq", vim.diagnostic.setloclist, "[L]SP Diagnostic [Q]uickfix")
 
-          -- Python-specific keymaps
-          --if client.name == "pyright" then
-          --  map("<leader>lo", function()
-          --    vim.lsp.buf.execute_command({
-          --      command = "pyright.organizeimports",
-          --      arguments = { vim.uri_from_bufnr(0) },
-          --    })
-          --  end, "[L]SP [O]rganize Imports")
-          --end
-
-          -- Rust-specific keymaps
-          --if client.name == "rust_analyzer" then
-          --  map("<leader>rr", function()
-          --    vim.cmd.RustLsp("reloadWorkspace")
-          --  end, "[R]ust [R]eload Workspace")
-          --end
-
           -- Document highlighting
           if client and client.server_capabilities.documentHighlightProvider then
             local highlight_augroup = vim.api.nvim_create_augroup("lsp-highlight", { clear = false })
@@ -320,21 +250,6 @@ return {
         end,
       })
 
-      -- Diagnostic signs
-      --local signs = { Error = "✘", Warn = "▲", Hint = "⚡", Info = "ℹ" }
-      --for type, icon in pairs(signs) do
-      --  local hl = "DiagnosticSign" .. type
-      --  vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-      --end
-
-      -- Auto-format on save for Python files
-      --vim.api.nvim_create_autocmd("BufWritePre", {
-      --  pattern = "*.py",
-      --  callback = function()
-      --    vim.lsp.buf.format({ async = false })
-      --  end,
-      --})
-
       -- Auto-format on save for Go files
       vim.api.nvim_create_autocmd("BufWritePre", {
         pattern = "*.go",
@@ -349,22 +264,4 @@ return {
       ]])
     end,
   },
-
-  -- Better Rust support (optional but recommended)
-  --{
-  --  "mrcjkb/rustaceanvim",
-  --  version = "^4", -- Recommended
-  --  ft = { "rust" },
-  --  opts = {
-  --    server = {
-  --      on_attach = function(client, bufnr)
-  --        -- Disable semantic tokens for better performance
-  --        client.server_capabilities.semanticTokensProvider = nil
-  --      end,
-  --    },
-  --  },
-  --  config = function(_, opts)
-  --    vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
-  --  end,
-  --},
 }
