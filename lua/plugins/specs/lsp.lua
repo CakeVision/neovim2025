@@ -81,12 +81,23 @@ return {
         },
 
         basedpyright = {
+          on_init = function(client)
+            local root = client.config.root_dir
+            local venv_path = root and (root .. "/boot/.venv/bin/python") or nil
+            if venv_path and vim.fn.executable(venv_path) == 1 then
+              -- client.config.settings.basedpyright = client.config.settings.basedpyright or {}
+              client.config.settings.basedpyright = client.config.settings.basedpyright or {}
+              client.config.settings.basedpyright.analysis = client.config.settings.basedpyright.analysis or {}
+              client.config.settings.python = {pythonPath = venv_path}
+              vim.notify("basedpyright: using .venv python", vim.logs.levels.INFO)
+            end
+          end,
           settings = {
             typeCheckingMode = "standard",
             analysis = {
               autoSearchPaths = true,
               useLibraryCodeForTypes = true,
-              diagnosticMode = "openFilesOnly",
+              diagnosticMode = "workleader",
               typeCheckingMode = "basic",
               autoImportCompletions = true,
               indexing = true,
@@ -158,6 +169,19 @@ return {
 
         -- Bash
         bashls = {},
+
+        -- C/C++ (Arduino, embedded)
+        clangd = {
+          cmd = {
+            "clangd",
+            "--background-index",
+            "--clang-tidy",
+            "--header-insertion=iwyu",
+            "--completion-style=detailed",
+            "--function-arg-placeholders=true",
+          },
+          filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+        },
       },
     },
     flags = {
@@ -193,19 +217,63 @@ return {
         lspconfig[server].setup(config)
       end
 
-      -- LSP attach function
+      -- =====================================================================
+      -- PER-FILETYPE ATTACH HELPERS
+      -- =====================================================================
+      local function watch_file(path, server)
+        if not path or vim.fn.filereadable(path) ~= 1 then return end
+        local w = vim.uv.new_fs_event()
+        if not w then return end
+        w:start(path, {}, vim.schedule_wrap(function(err)
+          w:stop()
+          if err then return end
+          vim.defer_fn(function()
+            vim.notify(server .. ": dependency changed, restarting LSP...", vim.log.levels.INFO)
+            vim.cmd("LspRestart " .. server)
+          end, 2000)
+        end))
+      end
+
+      local function watch_dir(path, server)
+        if not path then return end
+        local w = vim.uv.new_fs_event()
+        if not w then return end
+        w:start(path, {}, vim.schedule_wrap(function(err)
+          w:stop()
+          if err then return end
+          vim.defer_fn(function()
+            vim.notify(server .. ": dependency changed, restarting LSP...", vim.log.levels.INFO)
+            vim.cmd("LspRestart " .. server)
+          end, 2000)
+        end))
+      end
+
+      local ft_attach = {
+        python = function(client)
+          local root = client.config.root_dir
+          if root then watch_dir(root .. "/.venv", "basedpyright") end
+        end,
+        go = function(client)
+          local root = client.config.root_dir
+          if root then watch_file(root .. "/go.sum", "gopls") end
+        end,
+      }
+
+      -- =====================================================================
+      -- LSP ATTACH
+      -- =====================================================================
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("LspAttach", { clear = true }),
         callback = function(event)
           local client = vim.lsp.get_client_by_id(event.data.client_id)
           local bufnr = event.buf
+          local ft = vim.bo[bufnr].filetype
 
-          -- Helper function for mappings
           local function map(keys, func, desc)
             vim.keymap.set("n", keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
           end
 
-          -- LSP keymaps
+          -- Shared keymaps
           map("gd", require("telescope.builtin").lsp_definitions, "[G]oto [D]efinition")
           map("gr", require("telescope.builtin").lsp_references, "[G]oto [R]eferences")
           map("gI", require("telescope.builtin").lsp_implementations, "[G]oto [I]mplementation")
@@ -217,12 +285,15 @@ return {
           map("<leader>lf", function() vim.lsp.buf.format({ async = true }) end, "[L]SP [F]ormat")
           map("K", vim.lsp.buf.hover, "Hover Documentation")
           map("<leader>lk", vim.lsp.buf.signature_help, "Signature Documentation")
-
-          -- Diagnostic keymaps
           map("[d", vim.diagnostic.get_prev, "Previous [D]iagnostic")
           map("]d", vim.diagnostic.get_next, "Next [D]iagnostic")
           map("<leader>ld", vim.diagnostic.open_float, "[L]SP [D]iagnostic")
           map("<leader>lq", vim.diagnostic.setloclist, "[L]SP Diagnostic [Q]uickfix")
+          map("<leader>lR", "<cmd>LspRestart<cr>", "[L]SP [R]estart")
+
+          -- Per-filetype attach logic
+          local attach_fn = ft_attach[ft]
+          if attach_fn then attach_fn(client) end
 
           -- Document highlighting
           if client and client.server_capabilities.documentHighlightProvider then
@@ -232,13 +303,11 @@ return {
               group = highlight_augroup,
               callback = vim.lsp.buf.document_highlight,
             })
-
             vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
               buffer = bufnr,
               group = highlight_augroup,
               callback = vim.lsp.buf.clear_references,
             })
-
             vim.api.nvim_create_autocmd("LspDetach", {
               group = vim.api.nvim_create_augroup("lsp-detach", { clear = true }),
               callback = function(event2)

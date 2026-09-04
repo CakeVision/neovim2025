@@ -21,6 +21,7 @@ return {
         "yaml-language-server", -- YAML LSP
         "json-lsp",        -- JSON LSP
         "bash-language-server", -- Bash LSP
+        -- "clangd",              -- C/C++ LSP
         
         -- Python formatters and linters
         "black",           -- Python formatter
@@ -91,6 +92,7 @@ return {
         "yamlls",
         "jsonls",
         "bashls",
+        -- "clangd",
       },
     },
   },
