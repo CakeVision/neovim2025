@@ -64,7 +64,7 @@ return {
       wk.add({
         -- Main groups
         { "<leader>b", group = "buffers" },
-        { "<leader>c", group = "code" },
+        { "<leader>c", group = "language" },
         -- { "<leader>d", group = "debug/direnv" },
         { "<leader>f", group = "find" },
         { "<leader>g", group = "git" },

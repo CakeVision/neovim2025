@@ -170,6 +170,12 @@ return {
         -- Bash
         bashls = {},
 
+        -- CMake
+        -- neocmakelsp >= 0.11 uses a `stdio` subcommand; lspconfig still passes `--stdio`
+        neocmake = {
+          cmd = { "neocmakelsp", "stdio" },
+        },
+
         -- C/C++ (Arduino, embedded)
         clangd = {
           cmd = {

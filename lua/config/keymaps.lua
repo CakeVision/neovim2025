@@ -11,6 +11,11 @@ local keymap = vim.keymap.set
 keymap({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 keymap({ "n", "v" }, "<leader>y", '"+y', { desc = "Copy to sys clip" })
 
+-- Insert 4 spaces at the cursor (count multiplies, e.g. 2<leader>. = 8 spaces)
+keymap("n", "<leader>.", function()
+  vim.api.nvim_put({ string.rep(" ", 4 * vim.v.count1) }, "c", false, true)
+end, { desc = "Insert 4 spaces" })
+
 -- Quick escape
 keymap("i", "jk", "<ESC>", { silent = true })
 
@@ -21,6 +26,8 @@ keymap("n", "<leader>h", ":nohl<CR>", { desc = "Clear search highlight", silent 
 keymap({"n", "i", "v"}, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
 -- Fast quit
 keymap('n', "<C-q>", ":wqall<CR>", {desc= "Write Quit All", silent=true})
+-- Restart nvim (0.12+), keeping open files, splits and tabs via the built-in session restore
+keymap('n', "<leader>R", "<cmd>wall | restart<cr>", {desc= "Save all and restart nvim"})
 
 -- =============================================================================
 -- WINDOW NAVIGATION

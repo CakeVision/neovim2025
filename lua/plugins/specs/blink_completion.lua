@@ -24,18 +24,6 @@ return {
         ["<S-Tab>"] = { "snippet_backward", "fallback" },
         ["<C-n>"] = { "select_next", "fallback" },
         ["<C-p>"] = { "select_prev", "fallback" },
-        ["."] = {
-          function(cmp)
-            if cmp.is_visible() then
-              cmp.accept({text_edit = false})
-              vim.schedule(function()
-                vim.api.nvim_input(".")
-              end)
-              return true
-            end
-          end,
-          "fallback",
-        },
       },
 
       completion = {

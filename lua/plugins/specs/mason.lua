@@ -6,7 +6,6 @@ return {
   {
     "williamboman/mason.nvim",
     cmd = "Mason",
-    keys = { { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason" } },
     build = ":MasonUpdate",
     opts = {
       ensure_installed = {
@@ -21,6 +20,7 @@ return {
         "yaml-language-server", -- YAML LSP
         "json-lsp",        -- JSON LSP
         "bash-language-server", -- Bash LSP
+        "neocmakelsp",     -- CMake LSP
         -- "clangd",              -- C/C++ LSP
         
         -- Python formatters and linters
@@ -92,6 +92,7 @@ return {
         "yamlls",
         "jsonls",
         "bashls",
+        "neocmake",
         -- "clangd",
       },
     },

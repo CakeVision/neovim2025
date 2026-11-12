@@ -151,6 +151,115 @@ return {
     end
 
     -- =========================================================================
+    -- CMAKE TEMPLATES (available anywhere inside a CMake project)
+    -- =========================================================================
+
+    -- Project root = topmost CMakeLists.txt above the search dir
+    local function cmake_root(dir)
+      local found = vim.fs.find("CMakeLists.txt", { upward = true, type = "file", path = dir, limit = math.huge })
+      return found[#found] and vim.fs.dirname(found[#found])
+    end
+
+    -- Executables produced by the build (skips CMake's own scratch dirs)
+    local function cmake_executables(build_dir)
+      local exes = {}
+      if vim.fn.isdirectory(build_dir) == 0 then return exes end
+      for name, kind in vim.fs.dir(build_dir, {
+        depth = 4,
+        skip = function(d) return d ~= "CMakeFiles" and not d:match("^_deps") and not d:match("^%.") end,
+      }) do
+        local path = build_dir .. "/" .. name
+        if kind == "file" and vim.fn.executable(path) == 1 and not name:match("%.so[%.%d]*$") and not name:match("%.sh$") then
+          table.insert(exes, path)
+        end
+      end
+      return exes
+    end
+
+    local qf_components = { { "on_output_quickfix", open_on_match = true }, "default" }
+
+    overseer.register_template({
+      name = "cmake",
+      generator = function(opts, cb)
+        if vim.fn.executable("cmake") == 0 then return cb('Command "cmake" not found') end
+        local root = cmake_root(opts.dir)
+        if not root then return cb("No CMakeLists.txt found") end
+        local build = root .. "/build"
+
+        local function configure_args(build_type)
+          local args = { "-S", root, "-B", build, "-DCMAKE_BUILD_TYPE=" .. build_type, "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" }
+          -- Pick Ninja only on a fresh build dir; switching generators on an existing cache errors out
+          if vim.fn.executable("ninja") == 1 and vim.fn.filereadable(build .. "/CMakeCache.txt") == 0 then
+            vim.list_extend(args, { "-G", "Ninja" })
+          end
+          return args
+        end
+
+        local tmpls = {}
+        for _, bt in ipairs({ "Debug", "Release", "RelWithDebInfo" }) do
+          table.insert(tmpls, {
+            name = "cmake configure (" .. bt .. ")",
+            builder = function()
+              return { cmd = { "cmake" }, args = configure_args(bt), cwd = root, components = qf_components }
+            end,
+          })
+        end
+
+        vim.list_extend(tmpls, {
+          {
+            name = "cmake build",
+            tags = { overseer.TAG.BUILD },
+            builder = function()
+              return { cmd = { "cmake", "--build", build, "--parallel" }, cwd = root, components = qf_components }
+            end,
+          },
+          {
+            name = "cmake build target",
+            params = { target = { type = "string", desc = "Target to build" } },
+            builder = function(params)
+              return { cmd = { "cmake", "--build", build, "--parallel", "--target", params.target }, cwd = root, components = qf_components }
+            end,
+          },
+          {
+            name = "ctest",
+            tags = { overseer.TAG.TEST },
+            builder = function()
+              return { cmd = { "ctest", "--test-dir", build, "--output-on-failure" }, cwd = root, components = qf_components }
+            end,
+          },
+          {
+            name = "cmake clean",
+            builder = function()
+              return { cmd = { "cmake", "--build", build, "--target", "clean" }, cwd = root }
+            end,
+          },
+          {
+            name = "cmake wipe build dir",
+            builder = function()
+              return { cmd = { "rm", "-rf", build }, cwd = root }
+            end,
+          },
+        })
+
+        -- One "build & run" task per executable already in the build dir
+        for _, exe in ipairs(cmake_executables(build)) do
+          table.insert(tmpls, {
+            name = "cmake run " .. vim.fs.basename(exe),
+            builder = function()
+              return {
+                cmd = { "sh", "-c", 'cmake --build "$1" --parallel && exec "$2"', "sh", build, exe },
+                cwd = root,
+                components = qf_components,
+              }
+            end,
+          })
+        end
+
+        cb(tmpls)
+      end,
+    })
+
+    -- =========================================================================
     -- SHELL COMMAND RUNNER
     -- =========================================================================
 
@@ -198,7 +307,18 @@ return {
 
     vim.keymap.set("n", "<leader>rs", "<cmd>OverseerRun<cr>", { desc = "Run task" })
     vim.keymap.set("n", "<leader>rt", "<cmd>OverseerToggle<cr>", { desc = "Toggle task list" })
-    vim.keymap.set("n", "<leader>rl", "<cmd>OverseerRestartLast<cr>", { desc = "Restart last task" })
+    -- overseer v2 dropped :OverseerRestartLast; list_tasks() is newest-first
+    vim.keymap.set("n", "<leader>rl", function()
+      local task = overseer.list_tasks()[1]
+      if task then
+        task:restart(true)
+      else
+        vim.notify("No tasks to restart", vim.log.levels.INFO)
+      end
+    end, { desc = "Restart last task" })
+    vim.keymap.set("n", "<leader>ob", function()
+      overseer.run_task({ tags = { overseer.TAG.BUILD } })
+    end, { desc = "Run build task" })
     vim.keymap.set("n", "<leader>oc", prompt_shell_command, { desc = "Run shell command" })
     vim.keymap.set("n", "<leader>oh", pick_from_history, { desc = "Run from history" })
   end,

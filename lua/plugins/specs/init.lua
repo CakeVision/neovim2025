@@ -24,6 +24,7 @@ return {
   require("plugins.specs.debug"),
   require("plugins.specs.overseer_runner"),
   require("plugins.specs.rust"),
+  require("plugins.specs.cpp"),
   require("plugins.specs.wakatime"),
   require("plugins.specs.claude"),
   require("plugins.specs.no_neck_pain"),

@@ -13,30 +13,7 @@ return {
       history = true,
       delete_check_events = "TextChanged",
     },
-    keys = {
-      {
-        "<Tab>",
-        function()
-          local ls = require("luasnip")
-          if ls.expand_or_jumpable() then
-            ls.expand_or_jump()
-          end
-        end,
-        mode = { "i", "s" },
-        silent = true,
-      },
-      {
-        "<S-Tab>",
-        function()
-          local ls = require("luasnip")
-          if ls.jumpable(-1) then
-            ls.jump(-1)
-          end
-        end,
-        mode = { "i", "s" },
-        silent = true,
-      },
-    },
+    -- Tab/S-Tab snippet jumping is handled by blink.cmp (falls back to a normal Tab)
     config = function(_, opts)
       local ls = require("luasnip")
       
